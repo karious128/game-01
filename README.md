@@ -1,0 +1,237 @@
+# 森兽征伐 · Forest Beasts Campaign
+
+> 一款用 Unity 从零手搓的**单机卡牌对战 Demo**：五路战场、六大军阵营、110 张可收集卡牌、七场递进式征伐，从第一片空地一路打到魔龙之巢。
+
+[![Unity](https://img.shields.io/badge/Unity-2022.3.62f3c1-000000?logo=unity)](https://unity.com/)
+[![URP](https://img.shields.io/badge/Render-URP%2012.1.17-2C8EBB)](https://docs.unity3d.com/Packages/com.unity.render-pipelines.universal@12.1/manual/index.html)
+[![Tests](https://img.shields.io/badge/Tests-55%20EditMode%20%2B%2020%20PlayMode-4C9F70)](#自动化测试)
+[![License](https://img.shields.io/badge/Code-MIT-blue)](#许可)
+
+---
+
+## 目录
+
+- [这是什么](#这是什么)
+- [截图](#截图)
+- [核心玩法](#核心玩法)
+- [内容规模](#内容规模)
+- [如何运行](#如何运行)
+- [项目结构](#项目结构)
+- [技术实现](#技术实现)
+- [自动化测试](#自动化测试)
+- [文档索引](#文档索引)
+- [致谢与许可](#致谢与许可)
+
+---
+
+## 这是什么
+
+《森兽征伐》是一款回合制卡牌对战游戏。玩家在 5 条纵向道路（路）上部署单位，与 AI 英雄正面对撞：**同列同时结算、不跨路、伤害不溢出**。击败英雄或耗尽对方资源即可通关，一路推进 7 个关卡直至终章的魔龙。
+
+项目目标是**把一个完整的游戏闭环做出来**——不只是战斗 demo，而是包含主菜单、新手教程、关卡地图、牌库组牌、抽卡系统、收藏图鉴、战斗结算、存档、设置与音效的完整可玩流程。
+
+- **引擎**：Unity 2022.3.62f3c1（URP）
+- **语言**：C#（纯代码构建 UI 与美术，无美术外包）
+- **平台**：Windows x64（PC 单机）
+- **规模**：运行时脚本 6,035 行、编辑器工具 3,342 行、测试 1,802 行，合计约 11,200 行 C#
+
+## 截图
+
+| 新手教程 | 征伐地图 |
+| --- | --- |
+| ![教程](docs/screenshots/tutorial-intro-1600x900.png) | ![地图](docs/screenshots/campaign-top-1600x900.png) |
+
+| 战斗（1920×1080） | 魔龙终章 |
+| --- | --- |
+| ![战斗](docs/screenshots/battle-full-1920x1080.png) | ![魔龙](docs/screenshots/boss-arena-1600x900.png) |
+
+| 收藏图鉴 | 十连抽卡 |
+| --- | --- |
+| ![收藏](docs/screenshots/collection-1600x900.png) | ![抽卡](docs/screenshots/ten-draw-1600x900.png) |
+
+> 卡牌支持双击放大查看属性与专属趣味文案：
+
+![卡牌详情](docs/screenshots/card-story-1600x900.png)
+
+## 核心玩法
+
+**战场布局**：双方各 5 条路，每条路分为「攻击区」和「等待区」。单位先部署到等待区，下一回合按同列空位补进攻击区，双方补位完成后即可交战。
+
+**回合结算**：
+1. 双方从 1 点魔力起步，每回合上限 +1、最多 8 点并回满；
+2. 玩家出牌（单位入场 / 法术结算），AI 使用同一套合法性校验；
+3. 点击「攻击」，双方攻击区单位**同列同时碰撞**——先快照双方攻击与扣血，再统一处理死亡；
+4. 对面无单位时直接攻击英雄，**不跨列、过量伤害不溢出到英雄**；
+5. 回合结束，结算持续伤害与控制状态。
+
+**关键机制**：
+
+| 机制 | 说明 |
+| --- | --- |
+| 冲锋 | 本列攻击区空闲时，部署后立即入场 |
+| 护盾 | 独立数值，优先吸收伤害；完全吸收时不触发「受到伤害」 |
+| 冻结 / 晕眩 | 禁止本次碰撞与主动回合技能，回合结束后解除 |
+| 烧伤 / 灼伤 | 每回合交战后受 1 / 2 点伤害，持续至净化或阵亡；同类不叠加，灼伤覆盖烧伤 |
+| 净化 | 移除冻结、晕眩与持续伤害 |
+| 增幅 | 同时提高当前与最大生命，可超出印刷上限 |
+| 吸血 | 按**实际造成的伤害**治疗自身与己方英雄 |
+| 平局 | 双方英雄同时致命，或双方手牌 / 牌库 / 攻击区 / 等待区全空 |
+
+**牌组规则**：出征牌组 15 张、同名上限 2 张；牌库用尽后不再洗回、不再抽牌、不造成疲劳，剩余手牌仍可使用。手牌上限 8 张。
+
+## 内容规模
+
+| 维度 | 数量 |
+| --- | --- |
+| 可收集卡牌 | **110 张**（普通 20 + 野兽 / 军团 / 自然 / 冰原 / 火山各 18） |
+| 卡牌类型 | 单位 70 · 法术 40 |
+| 品质分布 | 传奇 7 · 稀有 21 · 史诗 29 · 勇者 53 |
+| 不可收集卡 | 森灵侍从（1/1 召唤物）· 魔龙（40 生命 Boss） |
+| 阵营 | 普通 · 野兽 · 军团 · 自然 · 冰原 · 火山 |
+| 关卡 | 7 关（6 关常规 + 1 关 Boss） |
+| 卡面插画 | 132 张独立 PNG（112 张正式卡 + 20 张历史占位，程序化合成 + CC0 素材） |
+
+**七场征伐**：
+
+| # | 关卡 | 敌方生命 | 敌方牌组 | 首次通关奖励 |
+| --- | --- | --- | --- | --- |
+| 1 | 第一片空地 | 20 | 10 张低费普通单位，起手 1 | 3 钻石 |
+| 2 | 芦苇桥 | 20 | 15 张普通 / 勇者，起手 2 | 普通十连券 + 2 钻石 |
+| 3 | 野兽林径 | 22 | 10 野兽 + 5 普通，起手 2 | 野兽十连券 + 3 钻石 |
+| 4 | 自然圣域 | 24 | 10 自然 + 5 普通，起手 2 | 自然十连券 + 5 钻石 |
+| 5 | 冰原 | 26 | 10 冰原 + 5 普通，起手 3 | 冰原十连券 + 8 钻石 |
+| 6 | 火山 | 28 | 10 火山 + 5 普通，起手 3 | 火山十连券 + 10 钻石 |
+| 7 | 魔龙之巢 | 40（Boss） | 零手牌 / 零牌库 | 通关致谢 |
+
+> 完整数值见 [`docs/ConfigTables/`](docs/ConfigTables/)。
+
+## 如何运行
+
+### 方式一：直接玩（推荐）
+
+1. 前往 [**Releases**](../../releases) 页面，下载最新版本的 `森兽征伐-windows-x64.zip`；
+2. 解压到任意目录（**不要**放在需要管理员权限的路径）；
+3. 双击 `森兽征伐.exe` 启动，按 `Alt + Enter` 切换全屏。
+
+> 首次运行若被 SmartScreen 拦截，选择「更多信息 → 仍要运行」即可（未做代码签名的个人 Demo）。
+
+### 方式二：从源码运行
+
+```bash
+git clone https://github.com/<your-name>/<repo-name>.git
+```
+
+1. 用 **Unity Hub** 以 `2022.3.62f3c1` 版本打开项目根目录；
+2. 首次导入资源需要几分钟；
+3. 打开场景 `Assets/Scenes/MainMenu.unity`；
+4. 点击 Play 即可游玩。
+
+仓库同时提供两个便捷脚本（需按本机路径修改 `Unity.exe` 位置）：
+
+- `open-editor.bat` — 一键打开编辑器
+- `build-fullscreen.bat` — 一键构建 Windows x64 版本到 `Builds/`
+
+## 项目结构
+
+```
+gsme-01/
+├── Assets/
+│   ├── Editor/                  # 编辑器工具：卡池生成、程序化美术、工程校验
+│   │   ├── CardCatalogBuilder.cs    # 110 张卡牌与关卡的唯一数据源
+│   │   ├── CampaignExpansion.cs     # 冰原 / 火山扩展与数值平衡
+│   │   ├── IllustratedCardArt.cs    # 卡面插画合成
+│   │   ├── ProceduralArtGenerator.cs# 桌面 / 卡面 / 图标程序化生成
+│   │   ├── ProjectBootstrap.cs      # 一键重建工程
+│   │   └── CardFlavor.cs            # 卡牌趣味文案表
+│   ├── Scripts/
+│   │   ├── Core/                # 纯逻辑层：战斗状态、棋盘、卡牌实例、抽卡规则
+│   │   ├── Battle/              # 战斗引擎、效果结算、AI、战斗反馈
+│   │   ├── Data/                # ScriptableObject 数据定义
+│   │   ├── UI/                  # 各界面控制器与 UI 工厂
+│   │   ├── AI/                  # 敌方 AI
+│   │   └── Save/                # 存档读写与迁移
+│   ├── Data/                    # 卡牌 / 关卡 / 卡池 / 牌组配置（.asset）
+│   ├── Resources/               # 运行时资源：卡面、背景、图标、音频
+│   ├── Scenes/                  # MainMenu / Map / Gacha / Battle
+│   ├── Tests/                   # EditMode + PlayMode 测试
+│   └── Docs/                    # 规则与开发日志
+├── docs/                        # 对外文档
+│   ├── GDD.md                       # 策划文档
+│   ├── UPLOAD_GUIDE.md              # 上传与简历展示指南
+│   ├── ConfigTables/                # 配置表（CSV + XLSX）
+│   ├── screenshots/                 # 界面截图
+│   └── tools/                       # 配置导出与发布打包脚本
+│       ├── export_config.py             # .asset → JSON + CSV
+│       ├── build_workbook.py            # JSON → Excel 配置表
+│       └── package_release.py           # 构建目录 → 干净的发布 zip
+├── Packages/                    # 包依赖清单
+├── ProjectSettings/             # 工程设置
+├── .gitignore / .gitattributes  # 忽略规则与行尾规范化
+├── open-editor.bat
+└── build-fullscreen.bat
+```
+
+> `Library/`、`Temp/`、`Logs/`、`Builds/`、`UserSettings/` 等生成目录已在 `.gitignore` 中排除。
+
+## 技术实现
+
+**分层架构，逻辑与表现解耦**
+
+- `Core/` 是**不依赖 UnityEngine 表现层**的纯战斗状态机（`BattleState` / `BoardState` / `UnitState`），
+  所有规则（补位、碰撞快照、死亡处理、持续伤害）都可被单元测试直接驱动；
+- `Battle/` 负责把规则层的结果翻译成表现：动画、音效、飘字、脉冲反馈；
+- `UI/` 通过 `UiFactory` 以代码构建全部界面，避免 Prefab 冲突，便于版本管理。
+
+**数据驱动**
+
+- 所有卡牌、关卡、卡池、牌组都是 `ScriptableObject`；
+- `CardCatalogBuilder` 是**唯一数据源**——卡池、关卡与卡面均由它一键重建，
+  修改数值只需改生成器，杜绝「改了 asset 下次被覆盖」的问题。
+
+**程序化美术**
+
+- 桌面木纹、卡面、阵营棋子、品质宝石、设置图标由 `ProceduralArtGenerator` 运行时生成；
+- 132 张卡面插画由 `IllustratedCardArt` 以原创栅格构图合成（基于 Kenney CC0 素材二次创作）；
+- 战斗音效由 `GameAudio` 本地合成，不依赖外部音频素材。
+
+**存档与迁移**
+
+- 存档版本化（当前 v5），保留收藏、钻石、牌组、通关进度与免费抽次数；
+- 版本升级时自动迁移旧档（例如为旧通关记录补发对应主题券）。
+
+## 自动化测试
+
+| 套件 | 用例数 | 覆盖范围 |
+| --- | --- | --- |
+| EditMode | **54 / 54** | 战斗规则、卡池配额、抽卡概率、存档迁移、扩展规则 |
+| PlayMode | **20 / 20** | 战斗流程、UI 交互、多分辨率表现 |
+
+> 上表为最近一次全量验证（`Logs/catalog-EditMode-results.xml` / `catalog-PlayMode-results.xml`）的实测结果，合计 74 项全部通过。
+
+重点覆盖：同列同时致命、空路打英雄、伤害不溢出、控制冷却、持续烧伤与净化、
+满血治疗限制、增幅 / 吸血结算、魔龙五路攻击、奖励迁移、精确品质概率、首次教程与双击文案。
+
+测试运行入口：Unity 菜单 `Tabletop Cards/Validation/Regenerate And Test`，
+报告输出至 `Logs/` 目录。测试使用隔离存档，并断言**不会修改玩家真实存档**。
+
+## 文档索引
+
+| 文档 | 内容 |
+| --- | --- |
+| [`docs/GDD.md`](docs/GDD.md) | 策划文档：定位、核心循环、系统设计、数值设计、后续规划 |
+| [`docs/ConfigTables/`](docs/ConfigTables/) | 配置表：卡牌 / 关卡 / 卡池 / 牌组（CSV + XLSX） |
+| [`docs/UPLOAD_GUIDE.md`](docs/UPLOAD_GUIDE.md) | 上传与展示指南：上传清单、体积限制、发布流程、简历写法、B 站视频脚本 |
+| [`Assets/Docs/GAME_RULES.md`](Assets/Docs/GAME_RULES.md) | 当前完整规则说明 |
+| [`Assets/Docs/DEVLOG.md`](Assets/Docs/DEVLOG.md) | 开发日志与验证记录 |
+| [`ATTRIBUTIONS.md`](ATTRIBUTIONS.md) | 素材来源与许可 |
+
+## 致谢与许可
+
+- **代码**：本项目代码以 MIT 许可开源，欢迎学习与交流。
+- **美术**：部分基础素材来自 [Kenney](https://kenney.nl/)（CC0），
+  卡面插画、图标、背景与棋子均由项目内脚本原创合成。
+- **音频**：战斗音效为项目内程序合成；背景音乐为个人素材，**未声明为可再分发**，
+  详见 [`ATTRIBUTIONS.md`](ATTRIBUTIONS.md)。
+- **制作**：karious
+
+> 如果这个项目对你有帮助，欢迎 Star ⭐ 或提 Issue 交流。
