@@ -12,15 +12,12 @@
 ## 目录
 
 - [这是什么](#这是什么)
-- [截图](#截图)
 - [核心玩法](#核心玩法)
 - [内容规模](#内容规模)
 - [如何运行](#如何运行)
 - [项目结构](#项目结构)
 - [技术实现](#技术实现)
 - [自动化测试](#自动化测试)
-- [文档索引](#文档索引)
-- [致谢与许可](#致谢与许可)
 
 ---
 
@@ -35,23 +32,6 @@
 - **平台**：Windows x64（PC 单机）
 - **规模**：运行时脚本 6,035 行、编辑器工具 3,342 行、测试 1,802 行，合计约 11,200 行 C#
 
-## 截图
-
-| 新手教程 | 征伐地图 |
-| --- | --- |
-| ![教程](docs/screenshots/tutorial-intro-1600x900.png) | ![地图](docs/screenshots/campaign-top-1600x900.png) |
-
-| 战斗（1920×1080） | 魔龙终章 |
-| --- | --- |
-| ![战斗](docs/screenshots/battle-full-1920x1080.png) | ![魔龙](docs/screenshots/boss-arena-1600x900.png) |
-
-| 收藏图鉴 | 十连抽卡 |
-| --- | --- |
-| ![收藏](docs/screenshots/collection-1600x900.png) | ![抽卡](docs/screenshots/ten-draw-1600x900.png) |
-
-> 卡牌支持双击放大查看属性与专属趣味文案：
-
-![卡牌详情](docs/screenshots/card-story-1600x900.png)
 
 ## 核心玩法
 
@@ -214,24 +194,3 @@ gsme-01/
 测试运行入口：Unity 菜单 `Tabletop Cards/Validation/Regenerate And Test`，
 报告输出至 `Logs/` 目录。测试使用隔离存档，并断言**不会修改玩家真实存档**。
 
-## 文档索引
-
-| 文档 | 内容 |
-| --- | --- |
-| [`docs/GDD.md`](docs/GDD.md) | 策划文档：定位、核心循环、系统设计、数值设计、后续规划 |
-| [`docs/ConfigTables/`](docs/ConfigTables/) | 配置表：卡牌 / 关卡 / 卡池 / 牌组（CSV + XLSX） |
-| [`docs/UPLOAD_GUIDE.md`](docs/UPLOAD_GUIDE.md) | 上传与展示指南：上传清单、体积限制、发布流程、简历写法、B 站视频脚本 |
-| [`Assets/Docs/GAME_RULES.md`](Assets/Docs/GAME_RULES.md) | 当前完整规则说明 |
-| [`Assets/Docs/DEVLOG.md`](Assets/Docs/DEVLOG.md) | 开发日志与验证记录 |
-| [`ATTRIBUTIONS.md`](ATTRIBUTIONS.md) | 素材来源与许可 |
-
-## 致谢与许可
-
-- **代码**：本项目代码以 MIT 许可开源，欢迎学习与交流。
-- **美术**：部分基础素材来自 [Kenney](https://kenney.nl/)（CC0），
-  卡面插画、图标、背景与棋子均由项目内脚本原创合成。
-- **音频**：战斗音效为项目内程序合成；背景音乐为个人素材，**未声明为可再分发**，
-  详见 [`ATTRIBUTIONS.md`](ATTRIBUTIONS.md)。
-- **制作**：karious
-
-> 如果这个项目对你有帮助，欢迎 Star ⭐ 或提 Issue 交流。
